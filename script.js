@@ -14,12 +14,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-/* ---------- Firebase ---------- */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ---------- ข้อมูลตั้งต้น ---------- */
 const GRADE_OPTIONS = [
     { label: "A (4.0)", value: 4 },
     { label: "B+ (3.5)", value: 3.5 },
@@ -38,7 +36,6 @@ const INITIAL_SUBJECTS = [
     { name: "ภาษาไทย", credits: 1.0, grade: 3 }
 ];
 
-/* ข้อความ error ของการล็อกอิน (ภาษาไทย บอกวิธีแก้) */
 const LOGIN_ERRORS = {
     "auth/configuration-not-found":
         "ยังไม่ได้เปิดใช้ Authentication ในโปรเจกต์ Firebase ให้กด Get started แล้วเปิด Google ที่แท็บ Sign-in method",
@@ -64,7 +61,6 @@ const subjectList = $("subjectList");
 let currentUser = null;
 let guestMode = false;
 
-/* ---------- ตัวช่วย ---------- */
 function formatGPA(value) {
     return Number.isFinite(value) ? value.toFixed(2) : "–";
 }
@@ -78,11 +74,9 @@ function readNumber(id) {
     return Number.isFinite(value) && value >= 0 ? value : 0;
 }
 
-/* ---------- สร้างแถววิชา ---------- */
 function createRow({ name = "", credits = "", grade = 4 } = {}) {
     const tr = document.createElement("tr");
 
-    // ชื่อวิชา
     const nameTd = document.createElement("td");
     const nameInput = document.createElement("input");
     nameInput.type = "text";
@@ -92,7 +86,6 @@ function createRow({ name = "", credits = "", grade = 4 } = {}) {
     nameInput.setAttribute("aria-label", "ชื่อวิชา");
     nameTd.appendChild(nameInput);
 
-    // หน่วยกิต
     const creditsTd = document.createElement("td");
     const creditsInput = document.createElement("input");
     creditsInput.type = "number";
@@ -104,7 +97,6 @@ function createRow({ name = "", credits = "", grade = 4 } = {}) {
     creditsInput.setAttribute("aria-label", "หน่วยกิต");
     creditsTd.appendChild(creditsInput);
 
-    // เกรด
     const gradeTd = document.createElement("td");
     const gradeSelect = document.createElement("select");
     gradeSelect.className = "subject-grade";
@@ -118,7 +110,6 @@ function createRow({ name = "", credits = "", grade = 4 } = {}) {
     gradeSelect.value = grade;
     gradeTd.appendChild(gradeSelect);
 
-    // ปุ่มลบ
     const removeTd = document.createElement("td");
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
@@ -131,7 +122,6 @@ function createRow({ name = "", credits = "", grade = 4 } = {}) {
     return tr;
 }
 
-/* ---------- คำนวณ ---------- */
 function getTermTotals() {
     let credits = 0;
     let points = 0;
@@ -212,7 +202,6 @@ function calculateGoal() {
     }
 }
 
-/* ---------- เก็บ / ใส่ข้อมูลในหน้า ---------- */
 function resetToDefaults() {
     subjectList.replaceChildren(...INITIAL_SUBJECTS.map((s) => createRow(s)));
     ["prevGPAX", "prevCredits", "nextCredits"].forEach((id) => {
@@ -227,7 +216,7 @@ function collectData() {
     const subjects = [...subjectList.querySelectorAll("tr")].map((tr) => ({
         name: tr.querySelector(".subject-name").value,
         credits: tr.querySelector(".subject-credits").value,
-        grade: parseFloat(tr.querySelector(".subject-grade").value)
+        grade: tr.querySelector(".subject-grade").value
     }));
 
     return {
@@ -240,7 +229,10 @@ function collectData() {
 }
 
 function applyData(data) {
-    const subjects = Array.isArray(data.subjects) ? data.subjects : [];
+    const subjects = Array.isArray(data.subjects) && data.subjects.length > 0 
+        ? data.subjects 
+        : INITIAL_SUBJECTS;
+    
     subjectList.replaceChildren(...subjects.map((s) => createRow(s)));
     $("prevGPAX").value = data.prevGPAX ?? "";
     $("prevCredits").value = data.prevCredits ?? "";
@@ -249,7 +241,6 @@ function applyData(data) {
     updateDashboard();
 }
 
-/* ---------- บันทึก / โหลด (Firestore) ---------- */
 function setStatus(text) {
     $("userStatus").textContent = text;
 }
@@ -278,7 +269,6 @@ async function loadData() {
             applyData(snap.data());
             setStatus("โหลดข้อมูลที่บันทึกไว้แล้ว");
         } else {
-            // บัญชีใหม่: เก็บสิ่งที่อยู่บนหน้าตอนนี้ไว้เป็นข้อมูลแรก
             await saveData();
         }
     } catch (error) {
@@ -287,7 +277,6 @@ async function loadData() {
     }
 }
 
-/* ---------- ล็อกอิน / ออกจากระบบ ---------- */
 async function signInWithGoogle() {
     $("loginError").textContent = "";
     try {
@@ -348,17 +337,20 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-/* ---------- เหตุการณ์ ---------- */
 subjectList.addEventListener("click", (event) => {
     const btn = event.target.closest(".removeBtn");
     if (!btn) return;
     btn.closest("tr").remove();
+    updateDashboard();
+    saveData();
 });
 
 $("addSubjectBtn").addEventListener("click", () => {
     const row = createRow();
     subjectList.appendChild(row);
     row.querySelector(".subject-name").focus();
+    updateDashboard();
+    saveData();
 });
 
 $("calcSubjectsBtn").addEventListener("click", () => {
@@ -384,5 +376,18 @@ $("authBtn").addEventListener("click", () => {
     }
 });
 
-/* ---------- เริ่มต้น ---------- */
+document.addEventListener("input", (event) => {
+    if (event.target.closest("#subjectList") || ["prevGPAX", "prevCredits", "nextCredits", "goalInput"].includes(event.target.id)) {
+        updateDashboard();
+        saveData();
+    }
+});
+
+document.addEventListener("change", (event) => {
+    if (event.target.closest("#subjectList")) {
+        updateDashboard();
+        saveData();
+    }
+});
+
 resetToDefaults();
