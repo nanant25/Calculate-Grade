@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-pending">
+    <div id="loginScreen" class="login-screen" hidden>
+        <div class="login-box">
+            <h2>Grade Calculator</h2>
+            <p>เข้าสู่ระบบเพื่อบันทึกรายวิชาและเป้าหมายของคุณ</p>
+            <button id="googleLoginBtn" type="button">เข้าสู่ระบบด้วย Google</button>
+            <button id="guestBtn" type="button" class="secondary">ใช้แบบ Guest</button>
+            <p class="login-note">Guest ใช้งานได้ครบ แต่ข้อมูลจะไม่ถูกบันทึก</p>
+            <p id="loginError" class="login-error" role="alert"></p>
+        </div>
+    </div>
+
+    <header>
+        <h1>Grade Calculator</h1>
+        <p>วางแผนเกรดของคุณให้เป็นเรื่องง่าย</p>
+    </header>
+
+    <div id="userBar" class="user-bar" hidden>
+        <img id="userAvatar" alt="" hidden referrerpolicy="no-referrer">
+        <span id="userName"></span>
+        <span id="userStatus" class="user-status"></span>
+        <button id="authBtn" type="button" class="small"></button>
+    </div>
+
+    <nav>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#subjects">รายวิชาของฉัน</a>
+        <a href="#goals">เป้าหมายเกรด</a>
+    </nav>
+
+    <main>
+        <section id="dashboard">
+            <h2>ภาพรวมผลการเรียน</h2>
+            <div class="grade-cards">
+                <article class="card">
+                    <h3>GPA เทอมนี้</h3>
+                    <p id="currentGPA">–</p>
+                </article>
+                <article class="card">
+                    <h3>GPAX ปัจจุบัน</h3>
+                    <p id="currentGPAX">–</p>
+                </article>
+                <article class="card">
+                    <h3>GPAX เป้าหมาย</h3>
+                    <p id="targetGPAX">3.75</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="subjects">
+            <h2>รายวิชาของฉัน</h2>
+            <button id="addSubjectBtn" type="button">
+                + เพิ่มรายวิชา
+            </button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ชื่อวิชา</th>
+                        <th>หน่วยกิต</th>
+                        <th>เกรด</th>
+                        <th><span class="visually-hidden">ลบ</span></th>
+                    </tr>
+                </thead>
+                <tbody id="subjectList"></tbody>
+                <tfoot>
+                    <tr>
+                        <td>รวมเทอมนี้</td>
+                        <td id="totalCredits">0</td>
+                        <td id="termGPA">–</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <button id="calcSubjectsBtn" type="button">
+                คำนวณเกรด
+            </button>
+        </section>
+
+        <section id="goals">
+            <h2>วางแผนเกรดเป้าหมาย</h2>
+            <p>
+                กรอกผลการเรียนสะสมก่อนเทอมนี้ (ถ้ามี)
+                แล้วกำหนด GPAX ที่ต้องการ
+                เพื่อดูว่าเทอมถัดไปต้องได้เกรดเฉลี่ยเท่าไร
+            </p>
+            <div class="goal-fields">
+                <div>
+                    <label for="prevGPAX">GPAX สะสมก่อนเทอมนี้</label>
+                    <input type="number" id="prevGPAX" min="0" max="4" step="0.01" placeholder="เช่น 3.40">
+                </div>
+                <div>
+                    <label for="prevCredits">หน่วยกิตสะสมก่อนเทอมนี้</label>
+                    <input type="number" id="prevCredits" min="0" step="0.5" placeholder="เช่น 20">
+                </div>
+                <div>
+                    <label for="nextCredits">หน่วยกิตที่จะลงเทอมถัดไป</label>
+                    <input type="number" id="nextCredits" min="0" step="0.5" placeholder="เช่น 10">
+                </div>
+                <div>
+                    <label for="goalInput">GPAX เป้าหมาย</label>
+                    <input type="number" id="goalInput" min="0" max="4" step="0.01" value="3.75">
+                </div>
+            </div>
+            <button id="calculateBtn" type="button">
+                คำนวณเกรดที่ต้องได้
+            </button>
+            <p id="result" aria-live="polite">
+                ผลการคำนวณจะแสดงที่นี่
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Grade Calculator © 2026</p>
+    </footer>
+
+    <script>
+        // กันหน้าว่างค้าง: ถ้า script.js โหลดไม่สำเร็จ จะเปิดหน้าให้เห็นหลัง 4 วินาที
+        setTimeout(function () {
+            document.body.classList.remove("auth-pending");
+        }, 4000);
+    </script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
